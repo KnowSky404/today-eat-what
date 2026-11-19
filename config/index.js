@@ -20,7 +20,7 @@ export default defineConfig(async (merge) => {
     h5: {
       publicPath: basePath,
       staticDirectory: 'static',
-      router: { mode: 'hash', basename: '/' },
+      router: { mode: 'hash' },
       postcss: { pxtransform: { enable: false }, autoprefixer: { enable: true } },
     },
   }
