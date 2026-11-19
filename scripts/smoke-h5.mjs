@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile, stat, readdir } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
 import { chromium, firefox } from 'playwright'
 
@@ -21,6 +21,12 @@ const server = createServer(async (req, res) => {
     res.writeHead(error?.code === 'ENOENT' ? 404 : 500).end(String(error))
   }
 })
+
+const jsFiles = (await readdir(join(root, 'js'))).filter(f => f.endsWith('.js'))
+console.log('JS_BUNDLE_NAMES', JSON.stringify(jsFiles))
+for (const file of jsFiles.filter(f=>f.startsWith('app.'))) {
+  console.log('JS_APP_BUNDLE', (await readFile(join(root, 'js', file), 'utf8')).slice(0, 6500))
+}
 
 await new Promise((done) => server.listen(0, '127.0.0.1', done))
 const address = server.address()
