@@ -31,12 +31,13 @@ try {
   for (const engine of [chromium, firefox]) {
     let browser
     let page
+    const logs = []
     const errors = []
     try {
       browser = await engine.launch({ headless: true })
       page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
       page.on('pageerror', (error) => errors.push(`pageerror: ${error.stack || error.message}`))
-      page.on('console', (message) => { if (message.type() === 'error') errors.push('console: ' + message.text()) })
+      page.on('console', (message) => { logs.push(message.type()+': '+message.text()); if (message.type() === 'error') errors.push('console: ' + message.text()) })
       page.on('response', (response) => { if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`) })
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
       await page.locator('.hero-title').waitFor({ timeout: 10000 })
@@ -50,6 +51,7 @@ try {
       failures++
       console.error(`FAIL ${engine.name()}: ${error.stack || error}`)
       if (errors.length) console.error(errors.join('\n'))
+      console.error('BROWSER LOGS ' + logs.join(' | '))
       if (page) {
         try {
           console.error('DIAGNOSTICS ' + JSON.stringify(await page.evaluate(() => ({
@@ -58,6 +60,8 @@ try {
             body: document.body?.innerHTML.slice(0, 4000),
             app: document.getElementById('app')?.outerHTML.slice(0, 3000),
             scripts: Array.from(document.scripts).map(s => ({src: s.src, type: s.type, text: s.textContent.slice(0,200)})),
+            resources: performance.getEntriesByType('resource').map(r => r.name).filter(x => /js\\/|css\\//.test(x)),
+            routes: Array.from(document.querySelectorAll('.taro_page, .taro-page, taro-page, .taro_router')).map(e=>({tag:e.tagName, cls:e.className, children:e.children.length})),
           }))))
         } catch (e) { console.error('Diagnostic collection failed: ' + e.message) }
       }
