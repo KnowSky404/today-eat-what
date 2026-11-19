@@ -14,6 +14,7 @@ function createId(): string {
 }
 
 export default function Index() {
+  console.log('[diagnostic] Index rendered')
   const [meals, setMeals] = useState<Meal[]>(readMenu)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
