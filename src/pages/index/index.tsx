@@ -17,7 +17,6 @@ export default function Index() {
   const [meals, setMeals] = useState<Meal[]>(readMenu)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
-  const [pending, setPending] = useState<Meal | null>(null)
   const [result, setResult] = useState<Meal | null>(null)
   const [shop, setShop] = useState('')
   const [dish, setDish] = useState('')
@@ -58,13 +57,11 @@ export default function Index() {
     const desired = ((360 - (index + 0.5) * segment) % 360 + 360) % 360
     const offset = (desired - phase + 360) % 360
     setResult(null)
-    setPending(picked)
     setSpinning(true)
     setRotation(rotation + (fastSpin ? 0 : 360 * 6) + offset)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       setResult(picked)
-      setPending(null)
       setSpinning(false)
       timerRef.current = null
     }, fastSpin ? 30 : SPIN_MS)
@@ -234,10 +231,10 @@ export default function Index() {
                 <Text>{spinning ? '正在旋转…' : result ? '再转一次' : '开始随机选择'}</Text>
                 <Text className='button-arrow'>↗</Text>
               </Button>
-              <View className='mode-toggle' onClick={() => { if (!spinning) setFastSpin((v) => !v) }}>
+              <Button className='mode-toggle' onClick={() => { if (!spinning) setFastSpin((v) => !v) }} disabled={spinning}>
                 <View className={'mode-check' + (fastSpin ? ' is-on' : '')}><Text>{fastSpin ? '✓' : ''}</Text></View>
                 <Text>跳过旋转动画</Text>
-              </View>
+              </Button>
             </View>
           </View>
 
