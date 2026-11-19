@@ -1,0 +1,53 @@
+{
+  "name": "today-eat-what",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-first meal roulette for Web and WeChat Mini Programs",
+  "license": "AGPL-3.0-only",
+  "packageManager": "bun@1.4.3",
+  "scripts": {
+    "dev:h5": "taro build --type h5 --watch",
+    "build:h5": "taro build --type h5",
+    "build:pages": "cross-env PUBLIC_BASE_PATH=/today-eat-what/ taro build --type h5",
+    "build:workers": "cross-env PUBLIC_BASE_PATH=/ taro build --type h5",
+    "dev:weapp": "taro build --type weapp --watch",
+    "build:weapp": "taro build --type weapp",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "bun run typecheck && bun run test && bun run build:h5 && bun run build:weapp"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.25.0",
+    "@tarojs/components": "4.3.1",
+    "@tarojs/helper": "4.3.1",
+    "@tarojs/plugin-framework-react": "4.3.1",
+    "@tarojs/plugin-platform-h5": "4.3.1",
+    "@tarojs/plugin-platform-weapp": "4.3.1",
+    "@tarojs/react": "4.3.1",
+    "@tarojs/runtime": "4.3.1",
+    "@tarojs/shared": "4.3.1",
+    "@tarojs/taro": "4.3.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/plugin-transform-class-properties": "^7.25.9",
+    "@babel/preset-react": "^7.24.7",
+    "@tarojs/cli": "4.3.1",
+    "@tarojs/vite-runner": "4.3.1",
+    "@types/node": "^22.15.0",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "babel-preset-taro": "4.3.1",
+    "cross-env": "^7.0.3",
+    "postcss": "^8.5.6",
+    "react-refresh": "^0.14.2",
+    "terser": "^5.30.4",
+    "typescript": "~5.8.3",
+    "vite": "^5.4.0",
+    "vitest": "^3.2.4"
+  }
+}

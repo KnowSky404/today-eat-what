@@ -1,0 +1,18 @@
+page {
+  background: #f7f7f5;
+  color: #19201e;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+}
+
+view, text, input, button {
+  box-sizing: border-box;
+}
+
+button {
+  font: inherit;
+}
+
+button::after {
+  border: none;
+}
