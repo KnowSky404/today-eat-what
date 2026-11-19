@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -30,7 +30,7 @@ jobs:
           bun run build:pages
           grep -q '/today-eat-what/' dist/index.html
       - name: Install browsers for runtime smoke test
-        run: bunx playwright install --with-deps chromium firefox
+        run: bunx playwright install chromium firefox
       - name: Browser smoke test (Chromium & Firefox)
         run: bun run smoke:h5
       - name: Build WeChat Mini Program
