@@ -25,5 +25,9 @@ jobs:
         run: bun run test
       - name: Build H5 (root path)
         run: bun run build:h5
+      - name: Build H5 (GitHub Pages subpath)
+        run: |
+          bun run build:pages
+          grep -q '/today-eat-what/' dist/index.html
       - name: Build WeChat Mini Program
         run: bun run build:weapp
