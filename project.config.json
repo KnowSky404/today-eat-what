@@ -1,0 +1,14 @@
+{
+  "miniprogramRoot": "dist/",
+  "projectname": "today-eat-what",
+  "description": "今天吃什么",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  }
+}

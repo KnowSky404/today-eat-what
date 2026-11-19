@@ -1,0 +1,30 @@
+# Contributor and coding-agent contract
+
+This file applies to the entire repository.
+
+## Purpose and boundaries
+- A local-first, privacy-respecting meal-choice roulette. The first release has no account, backend, advertisements, analytics, geolocation, or remote restaurant API.
+- Keep the Web experience excellent at 320–1920+ CSS pixels. Do not treat desktop as a stretched mobile screenshot.
+- Preserve WeChat Mini Program compatibility. Use Taro APIs and @tarojs/components in shared UI, not direct window/document/localStorage access.
+- Build static H5 for GitHub Pages project path and Cloudflare Workers root path. Never hardcode asset URLs or deployment credentials.
+- Respect the existing AGPL-3.0 license.
+
+## Architecture
+- src/domain/: pure menu types, selection, validation and sample data. No framework imports.
+- src/services/: storage via Taro, with guarded parsing and schema versioning.
+- src/pages/: presentation and interaction using React + Taro components.
+- Keep selection uniform over *enabled shop+dish pairs*, not first choosing a shop uniformly.
+- Avoid I/O in domain logic; keep business rules independently testable.
+- Avoid unnecessary libraries, global state solutions and microservices.
+
+## Product and design
+- Chinese-first, Apple-inspired restraint: generous spacing, typography, calm surfaces, subtle motion and honest feedback. Do not copy Apple marks, proprietary assets, or interface screenshots.
+- Respect reduced-motion preferences and small touch targets; use accessible button names and textual result independent of wheel color.
+- Support empty states, local persistence failure, long dish names and a changing number of entries.
+- Keep example entries clearly labeled as editable demo data.
+
+## Quality gates
+- Run: bun run typecheck, bun run test, bun run build:h5 and bun run build:weapp.
+- Include tests for any domain behavior change. Keep secrets out of git.
+- Use focused commits and PRs; no direct automatic merge to main.
+- All public URLs are deployment *targets* until the corresponding workflow succeeds and platform settings are configured.
