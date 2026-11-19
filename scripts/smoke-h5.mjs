@@ -30,10 +30,11 @@ let failures = 0
 try {
   for (const engine of [chromium, firefox]) {
     let browser
+    let page
     const errors = []
     try {
       browser = await engine.launch({ headless: true })
-      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+      page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
       page.on('pageerror', (error) => errors.push(`pageerror: ${error.stack || error.message}`))
       page.on('console', (message) => { if (message.type() === 'error') errors.push('console: ' + message.text()) })
       page.on('response', (response) => { if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`) })
@@ -49,6 +50,17 @@ try {
       failures++
       console.error(`FAIL ${engine.name()}: ${error.stack || error}`)
       if (errors.length) console.error(errors.join('\n'))
+      if (page) {
+        try {
+          console.error('DIAGNOSTICS ' + JSON.stringify(await page.evaluate(() => ({
+            url: location.href,
+            title: document.title,
+            body: document.body?.innerHTML.slice(0, 4000),
+            app: document.getElementById('app')?.outerHTML.slice(0, 3000),
+            scripts: Array.from(document.scripts).map(s => ({src: s.src, type: s.type, text: s.textContent.slice(0,200)})),
+          }))))
+        } catch (e) { console.error('Diagnostic collection failed: ' + e.message) }
+      }
     } finally {
       await browser?.close()
     }
