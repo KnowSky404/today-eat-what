@@ -27,7 +27,8 @@ bun run test
 bun run build:h5
 bun run build:weapp
 bun run build:pages
-bun run smoke:h5 # requires Playwright browsers; run after build:pages
+bunx playwright install chromium firefox # first time only
+bun run smoke:h5 # run after build:pages; verifies both browsers at desktop/mobile widths
 bun run build:workers
 ```
 
@@ -46,3 +47,6 @@ bun run build:workers
 
 ## 协作与许可证
 开发规范见 [AGENTS.md](./AGENTS.md)。仓库原有许可为 [AGPL-3.0](./LICENSE)，本次初始化保持不变。
+
+## H5 白屏回归说明
+此前 Taro 4.3.1 的显式 `h5.router.basename: '/'` 配置会造成 `#/pages/index/index` 已切换但 `#app` 为空。现保留 `hash` 模式并使用默认 basename，CI 加入 Playwright Chromium/Firefox 实际加载、抽选及移动端刷新测试，避免仅凭构建成功即判断已上线。

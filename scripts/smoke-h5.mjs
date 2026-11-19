@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
-import { readFile, stat, readdir } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
 import { chromium, firefox } from 'playwright'
 
@@ -21,12 +21,6 @@ const server = createServer(async (req, res) => {
     res.writeHead(error?.code === 'ENOENT' ? 404 : 500).end(String(error))
   }
 })
-
-const jsFiles = (await readdir(join(root, 'js'))).filter(f => f.endsWith('.js'))
-console.log('JS_BUNDLE_NAMES', JSON.stringify(jsFiles))
-for (const file of jsFiles.filter(f=>f.startsWith('app.'))) {
-  console.log('JS_APP_BUNDLE', (await readFile(join(root, 'js', file), 'utf8')).slice(0, 6500))
-}
 
 await new Promise((done) => server.listen(0, '127.0.0.1', done))
 const address = server.address()
@@ -51,8 +45,12 @@ try {
       assert.equal(await page.locator('.meal-row').count(), 12, 'demo meals must render')
       await page.locator('.primary-button').click()
       await page.locator('.result-title').filter({ hasNotText: /惊喜正在路上/ }).waitFor({ timeout: 7500 })
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.reload({ waitUntil: 'networkidle' })
+      await page.locator('.hero-title').waitFor({ timeout: 10000 })
+      assert.equal(await page.locator('.meal-row').count(), 12, 'mobile reload should still render')
       assert.equal(errors.length, 0, errors.join('\n'))
-      console.log(`PASS ${engine.name()} H5: mounted, seeded, spin completed, no browser errors`)
+      console.log(`PASS ${engine.name()} H5: desktop and mobile mounted, seeded, spin completed, no browser errors`)
     } catch (error) {
       failures++
       console.error(`FAIL ${engine.name()}: ${error.stack || error}`)
@@ -63,7 +61,7 @@ try {
           console.error('DIAGNOSTICS ' + JSON.stringify(await page.evaluate(() => ({
             url: location.href,
             title: document.title,
-            body: document.body?.innerHTML.slice(0, 4000),
+            bodyText: document.body?.innerText.slice(0, 400),
             app: document.getElementById('app')?.outerHTML.slice(0, 3000),
             scripts: Array.from(document.scripts).map(s => ({src: s.src, type: s.type, text: s.textContent.slice(0,200)})),
             resources: performance.getEntriesByType('resource').map(r => r.name).filter(x => x.includes('/js/') || x.includes('/css/')),
