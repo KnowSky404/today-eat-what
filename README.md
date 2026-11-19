@@ -27,6 +27,7 @@ bun run test
 bun run build:h5
 bun run build:weapp
 bun run build:pages
+bun run smoke:h5 # requires Playwright browsers; run after build:pages
 bun run build:workers
 ```
 

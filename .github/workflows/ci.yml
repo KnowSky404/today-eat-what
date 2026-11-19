@@ -29,5 +29,9 @@ jobs:
         run: |
           bun run build:pages
           grep -q '/today-eat-what/' dist/index.html
+      - name: Install browsers for runtime smoke test
+        run: bunx playwright install --with-deps chromium firefox
+      - name: Browser smoke test (Chromium & Firefox)
+        run: bun run smoke:h5
       - name: Build WeChat Mini Program
         run: bun run build:weapp
