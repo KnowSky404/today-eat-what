@@ -20,6 +20,7 @@ export default defineConfig(async (merge) => {
     h5: {
       publicPath: basePath,
       staticDirectory: 'static',
+      // Do not set basename: '/' here: it prevents the initial route from mounting in Taro 4.3.1.
       router: { mode: 'hash' },
       postcss: { pxtransform: { enable: false }, autoprefixer: { enable: true } },
     },

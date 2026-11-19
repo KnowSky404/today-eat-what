@@ -28,3 +28,7 @@ This file applies to the entire repository.
 - Include tests for any domain behavior change. Keep secrets out of git.
 - Use focused commits and PRs; no direct automatic merge to main.
 - All public URLs are deployment *targets* until the corresponding workflow succeeds and platform settings are configured.
+
+## Runtime regression
+- Pages subpath tests must use a real browser, not just a successful Vite build. Run `bun run build:pages` then `bun run smoke:h5` (Playwright Chromium and Firefox installed).
+- Do not set `h5.router.basename: '/'`; in Taro 4.3.1 it causes an empty `#app` after the hash redirect. Preserve the default basename and test `/today-eat-what/` serving.
