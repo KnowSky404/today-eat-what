@@ -60,7 +60,7 @@ try {
             body: document.body?.innerHTML.slice(0, 4000),
             app: document.getElementById('app')?.outerHTML.slice(0, 3000),
             scripts: Array.from(document.scripts).map(s => ({src: s.src, type: s.type, text: s.textContent.slice(0,200)})),
-            resources: performance.getEntriesByType('resource').map(r => r.name).filter(x => /js\\/|css\\//.test(x)),
+            resources: performance.getEntriesByType('resource').map(r => r.name).filter(x => x.includes('/js/') || x.includes('/css/')),
             routes: Array.from(document.querySelectorAll('.taro_page, .taro-page, taro-page, .taro_router')).map(e=>({tag:e.tagName, cls:e.className, children:e.children.length})),
           }))))
         } catch (e) { console.error('Diagnostic collection failed: ' + e.message) }
