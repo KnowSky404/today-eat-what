@@ -50,6 +50,8 @@ jobs:
         run: bun run build:weapp
 
   workers-build:
+    permissions:
+      contents: write
     name: Validate Cloudflare Workers Build
     runs-on: ubuntu-24.04
     steps:
@@ -77,3 +79,15 @@ jobs:
           path: bun.lock
           if-no-files-found: error
           retention-days: 3
+      - name: One-time commit generated Bun lockfile to feature branch
+        if: github.event_name == 'pull_request' && github.head_ref == 'chore/cloudflare-workers-builds-git'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin refs/heads/chore/cloudflare-workers-builds-git:refs/remotes/origin/chore/cloudflare-workers-builds-git
+          git checkout -B chore/cloudflare-workers-builds-git refs/remotes/origin/chore/cloudflare-workers-builds-git
+          git add bun.lock
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: add reproducible Bun lockfile'
+            git push origin HEAD:refs/heads/chore/cloudflare-workers-builds-git
+          fi
