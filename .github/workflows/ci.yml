@@ -29,6 +29,11 @@ jobs:
         run: |
           bun run build:pages
           grep -q '/today-eat-what/' dist/index.html
+      - name: Install Chinese fonts for visual snapshots
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y fonts-noto-cjk
+          fc-cache -f
       - name: Install browsers for runtime smoke test
         run: bunx playwright install chromium firefox
       - name: Browser smoke test (Chromium & Firefox)
