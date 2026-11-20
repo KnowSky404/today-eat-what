@@ -363,3 +363,19 @@
 .meal-shop { color: #7d877f; }
 .remove-button { color: #6e7a71; }
 .section-kicker { color: #909a90; }
+
+/* Remove unwanted disabled styling and surface utility controls legibly. */
+.mode-toggle {
+  width: max-content;
+  min-width: 152px;
+  color: #637266 !important;
+  background-color: transparent !important;
+  opacity: 1;
+  gap: 8px;
+}
+.mode-label { display: inline-block; color: inherit !important; font-size: 12px; white-space: nowrap; }
+.mode-check { flex: 0 0 auto; }
+.remove-button { opacity: 1; color: #586b60 !important; }
+.remove-glyph { display: block; font-size: 22px; line-height: 1; color: inherit !important; }
+.reset-button { opacity: 1; color: #796d64 !important; }
+.reset-label { display: inline-block; color: inherit !important; white-space: nowrap; }
