@@ -124,6 +124,9 @@ try {
       await page.locator('.winner-dialog').waitFor({ timeout: 7500 })
       assert.equal(await page.locator('.winner-dish').innerText(), await page.locator('.result-title').innerText(), 'dialog must match roulette selection')
       assert.ok((await page.locator('.winner-shop').innerText()).includes(' · '), 'winner must show district and shop')
+      // Capture the fully settled dialog rather than a translucent entrance animation frame.
+      await page.waitForTimeout(650)
+      assert.equal(await page.locator('.winner-dialog').evaluate((el) => getComputedStyle(el).opacity), '1')
       await page.screenshot({ path: `artifacts/layout/${engine.name()}-winner-desktop.png`, fullPage: false })
       await page.setViewportSize({ width: 390, height: 844 })
       await page.screenshot({ path: `artifacts/layout/${engine.name()}-winner-mobile.png`, fullPage: false })
