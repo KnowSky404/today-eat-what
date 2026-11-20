@@ -79,7 +79,7 @@ async function assertLayout(page, width, engine) {
   assert.ok(layout.addButtonOpacity >= .9, `${engine} ${width}px add button unexpectedly disabled/transparent: ${JSON.stringify(layout)}`)
   assert.ok(layout.mode.width >= 120, `${engine} ${width}px missing animation label: ${JSON.stringify(layout)}`)
   assert.ok(layout.modeText.includes('跳过旋转动画'), `${engine} ${width}px missing animation label content`)
-  assert.ok(layout.reset.width >= 80 && layout.resetText.includes('恢复演示数据'), `${engine} ${width}px missing reset control: ${JSON.stringify(layout)}`)
+  assert.ok(layout.reset.width >= 80 && layout.resetText.includes('恢复推荐清单'), `${engine} ${width}px missing reset control: ${JSON.stringify(layout)}`)
   assert.equal(layout.removeText.trim(), '×', `${engine} ${width}px missing delete label`)
   assert.ok(layout.removeOpacity >= .9, `${engine} ${width}px hidden delete control: ${JSON.stringify(layout)}`)
   assert.ok(layout.kicker.height <= 24, `${engine} ${width}px wrapped list kicker: ${JSON.stringify(layout)}`)
