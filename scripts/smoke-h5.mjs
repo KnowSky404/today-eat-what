@@ -57,6 +57,8 @@ async function assertLayout(page, width, engine) {
       addButtonColor: getComputedStyle(document.querySelector('.add-button')).color,
       addButtonTextColor: getComputedStyle(document.querySelector('.add-button').querySelector('span') || document.querySelector('.add-button')).color,
       addButtonOpacity: parseFloat(getComputedStyle(document.querySelector('.add-button')).opacity),
+      addButtonClass: document.querySelector('.add-button').className,
+      addButtonDisabledAttribute: document.querySelector('.add-button').getAttribute('disabled'),
 
     }
   })

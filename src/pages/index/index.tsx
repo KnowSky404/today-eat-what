@@ -226,12 +226,12 @@ export default function Index() {
               <Text className='result-label'>{spinning ? '正在为你挑选' : result ? '今天就吃这个' : '准备好了吗？'}</Text>
               <Text className='result-title'>{spinning ? '惊喜正在路上…' : result ? result.dish : hasResults ? '让转盘替你做决定' : '还没有参与抽取的菜品'}</Text>
               <Text className='result-subtitle'>{result && !spinning ? result.shop : hasResults ? '按下按钮，随机选出一份午餐' : '在右侧添加或启用菜品后再试试'}</Text>
-              <Button className='primary-button' onClick={spin} disabled={!hasResults || spinning}>
+              <Button className={'primary-button' + (!hasResults || spinning ? ' is-disabled' : '')} onClick={spin} disabled={!hasResults || spinning}>
                 <Text className='button-sparkle'>✦</Text>
                 <Text>{spinning ? '正在旋转…' : result ? '再转一次' : '开始随机选择'}</Text>
                 <Text className='button-arrow'>↗</Text>
               </Button>
-              <Button className='mode-toggle' onClick={() => { if (!spinning) setFastSpin((v) => !v) }} disabled={spinning}>
+              <Button className={'mode-toggle' + (spinning ? ' is-disabled' : '')} onClick={() => { if (!spinning) setFastSpin((v) => !v) }} disabled={spinning}>
                 <View className={'mode-check' + (fastSpin ? ' is-on' : '')}><Text>{fastSpin ? '✓' : ''}</Text></View>
                 <Text>跳过旋转动画</Text>
               </Button>
@@ -255,7 +255,7 @@ export default function Index() {
                   <View className='add-form'>
                     <Input className='meal-input' value={shop} maxlength={MAX_TEXT_LENGTH} placeholder='店铺名称，例如：楼下食堂' onInput={(event) => setShop(event.detail.value)} />
                     <Input className='meal-input' value={dish} maxlength={MAX_TEXT_LENGTH} placeholder='菜品名称，例如：鸡腿饭' onInput={(event) => setDish(event.detail.value)} onConfirm={addMeal} />
-                    <Button className='add-button' onClick={addMeal} disabled={spinning || (!editingId && meals.length >= MAX_ITEMS)}><Text>＋</Text> {editingId ? '保存修改' : '添加到清单'}</Button>
+                    <Button className={'add-button' + (spinning || (!editingId && meals.length >= MAX_ITEMS) ? ' is-disabled' : '')} onClick={addMeal} disabled={spinning || (!editingId && meals.length >= MAX_ITEMS)}><Text>＋</Text> {editingId ? '保存修改' : '添加到清单'}</Button>
                     {editingId && <Button className='cancel-button' onClick={cancelEdit}>取消编辑</Button>}
                     {!!message && <Text className='form-message'>{message}</Text>}
                   </View>
