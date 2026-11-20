@@ -32,3 +32,8 @@ This file applies to the entire repository.
 ## Runtime regression
 - Pages subpath tests must use a real browser, not just a successful Vite build. Run `bun run build:pages` then `bun run smoke:h5` (Playwright Chromium and Firefox installed).
 - Do not set `h5.router.basename: '/'`; in Taro 4.3.1 it causes an empty `#app` after the hash redirect. Preserve the default basename and test `/today-eat-what/` serving.
+
+## Visual layout acceptance
+- DOM smoke tests are not visual tests. Check responsive geometry at 320, 390, 768, 1024, 1440, 1680 and 1920px in Chromium and Firefox.
+- Taro Button default styles can make action buttons expand in flex/grid layouts. Explicitly constrain individual button widths and prevent menu dish names from collapsing to vertical glyphs.
+- Preserve screenshot artifacts (desktop/tablet/mobile) from CI for human review before merging a UI change.
