@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro'
 import { parseMenu, type Meal, type MenuEnvelope } from '../domain/menu'
-import { SAMPLE_MEALS } from '../domain/sample'
+import { migrateUntouchedDemoMenu, SAMPLE_MEALS } from '../domain/sample'
 
 const KEY = 'today-eat-what.menu.v1'
 
@@ -10,7 +10,7 @@ export function readMenu(): Meal[] {
     if (!raw) return SAMPLE_MEALS.map((meal) => ({ ...meal }))
     const data: unknown = typeof raw === 'string' ? JSON.parse(raw) : raw
     const parsed = parseMenu(data)
-    return parsed ?? SAMPLE_MEALS.map((meal) => ({ ...meal }))
+    return parsed ? migrateUntouchedDemoMenu(parsed) : SAMPLE_MEALS.map((meal) => ({ ...meal }))
   } catch {
     return SAMPLE_MEALS.map((meal) => ({ ...meal }))
   }
