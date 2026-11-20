@@ -16,7 +16,7 @@ Taro 4 + React 18 + TypeScript + Vite + Bun；前端使用 Taro 组件和 Taro S
 需要 Bun 1.4.3+。首次安装：
 
 ```bash
-bun install
+bun ci
 bun run dev:h5
 ```
 
@@ -33,7 +33,7 @@ bun run build:workers
 bun run check:workers # Wrangler dry run; does not publish
 ```
 
-开发完成后请提交由 `bun install` 生成的 `bun.lock`，后续将 CI 切换至 `bun ci` 以锁定依赖。**当前初始化环境无法联网生成真实锁文件**，因此 CI 暂用 `bun install`。
+仓库已提交 `bun.lock`，CI 和 Cloudflare Workers Builds 均可据此安装固定依赖。需要更新依赖时再运行 `bun install` 并提交更新后的锁文件。
 
 ## 部署方式
 - **GitHub Pages**：保持原有 GitHub Actions 发布流程，构建基准路径 `/today-eat-what/`。

@@ -16,7 +16,7 @@
 ## 构建环境
 
 - 仓库固定 `packageManager: bun@1.4.3`；Cloudflare Workers Builds 支持 Bun，并按 `packageManager` 选版本。
-- `bun.lock` 提交后由 Cloudflare 自动安装依赖；通常**无需额外填写安装命令**。若平台没有自动识别 Bun 或构建提示找不到依赖，可在 Build variables 设置 `SKIP_DEPENDENCY_INSTALL=1`，并改 Build command 为 `bun install --frozen-lockfile && bun run build:workers`。
+- 仓库已提交 `bun.lock`；Cloudflare 可据此自动安装依赖；通常**无需额外填写安装命令**。若平台没有自动识别 Bun 或构建提示找不到依赖，可在 Build variables 设置 `SKIP_DEPENDENCY_INSTALL=1`，并改 Build command 为 `bun install --frozen-lockfile && bun run build:workers`。
 - 不要同时开启手动安装与平台自动安装，以避免重复安装。
 - 此应用不使用运行时 Secrets / Bindings / API / 数据库，所有菜品数据仅在用户本地存储。
 - `wrangler.jsonc` 的 `assets.directory: ./dist` 和 `not_found_handling: single-page-application` 已正确支持静态 H5 页面。
