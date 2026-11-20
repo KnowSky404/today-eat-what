@@ -1,0 +1,7 @@
+{
+  "name": "today-eat-what-weapp-tools",
+  "private": true,
+  "devDependencies": {
+    "miniprogram-ci": "2.1.31"
+  }
+}

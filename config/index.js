@@ -9,7 +9,7 @@ export default defineConfig(async (merge) => {
     designWidth: 750,
     deviceRatio: { 640: 2.34 / 2, 750: 1, 375: 2, 828: 1.81 / 2 },
     sourceRoot: 'src',
-    outputRoot: 'dist',
+    outputRoot: process.env.TARO_ENV === 'weapp' ? 'dist-weapp' : 'dist',
     framework: 'react',
     compiler: 'vite',
     plugins: [],

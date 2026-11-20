@@ -1,6 +1,14 @@
 node_modules/
 dist/
+/dist-weapp/
+/artifacts/
+/project.private.config.json
+*.key
+*.pem
+*.p12
+*.pfx
 .taro/
+/.swc/
 *.tsbuildinfo
 coverage/
 .DS_Store

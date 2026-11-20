@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useShareAppMessage } from '@tarojs/taro'
 import { Button, Input, Text, View } from '@tarojs/components'
 import { MAX_ITEMS, MAX_TEXT_LENGTH, MAX_NOTE_LENGTH, activeMeals, chooseMeal, isDuplicate, type Meal } from '../../domain/menu'
 import { SAMPLE_MEALS } from '../../domain/sample'
@@ -8,15 +8,17 @@ import './index.css'
 
 const SEGMENT_COLORS = ['#fbdcc5', '#fde9d5', '#e6ede1', '#dce8e8', '#e5e3f3', '#f4dce0']
 const SPIN_MS = 4200
+const IS_WEAPP = process.env.TARO_ENV === 'weapp'
 
 function createId(): string {
   return 'meal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8)
 }
 
 export default function Index() {
-  const [meals, setMeals] = useState<Meal[]>(readMenu)
+  const [initialMenu] = useState(readMenu)
+  const [meals, setMeals] = useState(initialMenu.meals)
   const [rotation, setRotation] = useState(0)
-  const [spinning, setSpinning] = useState(false)
+  const [pendingPick, setPendingPick] = useState<Meal | null>(null)
   const [result, setResult] = useState<Meal | null>(null)
   const [winnerOpen, setWinnerOpen] = useState(false)
   const [shop, setShop] = useState('')
@@ -28,7 +30,13 @@ export default function Index() {
   const [fastSpin, setFastSpin] = useState(false)
   const [saved, setSaved] = useState(true)
   const [message, setMessage] = useState('')
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const spinning = pendingPick !== null
+  const spinInProgress = useRef(false)
+
+  useShareAppMessage(() => ({
+    title: '今天吃什么 · 用转盘决定',
+    path: '/pages/index/index',
+  }))
 
   const enabled = useMemo(() => activeMeals(meals), [meals])
   const shopCount = useMemo(() => new Set(meals.map((item) => (item.area ?? '') + '/' + item.shop)).size, [meals])
@@ -44,15 +52,33 @@ export default function Index() {
   }, [enabled, segment])
 
   useEffect(() => {
-    setSaved(writeMenu(meals))
-  }, [meals])
+    setSaved(initialMenu.canSave && writeMenu(meals))
+  }, [initialMenu.canSave, meals])
 
   useEffect(() => {
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [])
+    if (!pendingPick) return
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const startTimer = () => {
+      if (cancelled) return
+      timer = setTimeout(() => {
+        setResult(pendingPick)
+        setPendingPick(null)
+        setWinnerOpen(true)
+        spinInProgress.current = false
+      }, fastSpin ? 30 : SPIN_MS)
+    }
+    // Wait for Taro to send the rotation to the Mini Program view layer.
+    if (IS_WEAPP) Taro.nextTick(startTimer)
+    else startTimer()
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [pendingPick, fastSpin])
 
   function spin() {
-    if (spinning || enabled.length === 0) return
+    if (spinInProgress.current || enabled.length === 0) return
     const picked = chooseMeal(enabled)
     if (!picked) return
     const index = enabled.findIndex((item) => item.id === picked.id)
@@ -61,15 +87,9 @@ export default function Index() {
     const offset = (desired - phase + 360) % 360
     setWinnerOpen(false)
     setResult(null)
-    setSpinning(true)
+    spinInProgress.current = true
+    setPendingPick(picked)
     setRotation(rotation + (fastSpin ? 0 : 360 * 6) + offset)
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => {
-      setResult(picked)
-      setSpinning(false)
-      setWinnerOpen(true)
-      timerRef.current = null
-    }, fastSpin ? 30 : SPIN_MS)
   }
 
   function addMeal() {
@@ -120,6 +140,7 @@ export default function Index() {
     setArea(item.area ?? '')
     setNote(item.note ?? '')
     setMessage('正在编辑：' + item.dish)
+    if (IS_WEAPP) Taro.pageScrollTo({ selector: '.add-form', duration: fastSpin ? 0 : 180 })
   }
 
   function cancelEdit() {
@@ -169,7 +190,7 @@ export default function Index() {
 
   const hasResults = enabled.length > 0
   return (
-    <View className='app-shell'>
+    <View className={IS_WEAPP ? 'app-shell weapp-shell' : 'app-shell'}>
       <View className='topbar'>
         <View className='brand'>
           <View className='brand-icon'><Text>✳</Text></View>
@@ -248,7 +269,7 @@ export default function Index() {
             <View className='result-area'>
               <Text className='result-label'>{spinning ? '正在为你挑选' : result ? '今天就吃这个' : '准备好了吗？'}</Text>
               <Text className='result-title'>{spinning ? '惊喜正在路上…' : result ? result.dish : hasResults ? '让转盘替你做决定' : '还没有参与抽取的菜品'}</Text>
-              <Text className='result-subtitle'>{result && !spinning ? (result.area ? result.area + ' · ' : '') + result.shop : hasResults ? '按下按钮，随机选出一份午餐' : '在右侧添加或启用菜品后再试试'}</Text>
+              <Text className='result-subtitle'>{result && !spinning ? (result.area ? result.area + ' · ' : '') + result.shop : hasResults ? '按下按钮，随机选出一份午餐' : '在候选清单中添加或启用菜品后再试试'}</Text>
               <Button className={'primary-button' + (!hasResults || spinning ? ' is-disabled' : '')} onClick={spin} disabled={!hasResults || spinning ? true : undefined}>
                 <Text className='button-sparkle'>✦</Text>
                 <Text>{spinning ? '正在旋转…' : result ? '再转一次' : '开始随机选择'}</Text>
@@ -318,7 +339,7 @@ export default function Index() {
               <View className='note-content'>
                 <Text className='note-title'>简单一点，快乐一点。</Text>
                 <Text className='note-description'>每道启用的菜品机会相同。数据只保存在这台设备中，不会上传。</Text>
-                <Text className='save-status'>{saved ? '✓ 已保存到本地' : '! 保存失败，请检查存储权限'}</Text>
+                <Text className='save-status'>{saved ? '✓ 已保存到本地' : '! 本地保存失败，本次改动可能无法保留'}</Text>
               </View>
             </View>
           </View>
@@ -330,8 +351,9 @@ export default function Index() {
         </View>
       </View>
       {winnerOpen && result && (
-        <View className='winner-overlay' onClick={() => setWinnerOpen(false)}>
-          <View className='winner-dialog' role='dialog' aria-label='随机选餐结果' onClick={(event) => event.stopPropagation()}>
+        <View className={fastSpin ? 'winner-overlay winner-still' : 'winner-overlay'}>
+          <View className='winner-backdrop' catchMove={IS_WEAPP || undefined} onClick={() => setWinnerOpen(false)} />
+          <View className='winner-dialog' role='dialog' aria-label='随机选餐结果'>
             <View className='winner-graphic'>
               <View className='winner-halo' />
               <Text className='winner-star winner-star-a'>✦</Text>

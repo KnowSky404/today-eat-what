@@ -48,6 +48,8 @@ jobs:
           retention-days: 7
       - name: Build WeChat Mini Program
         run: bun run build:weapp
+      - name: Smoke test compiled WeChat page
+        run: bun run smoke:weapp
 
   workers-build:
     name: Validate Cloudflare Workers Build
