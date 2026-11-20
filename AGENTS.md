@@ -37,3 +37,11 @@ This file applies to the entire repository.
 - DOM smoke tests are not visual tests. Check responsive geometry at 320, 390, 768, 1024, 1440, 1680 and 1920px in Chromium and Firefox.
 - Taro Button default styles can make action buttons expand in flex/grid layouts. Explicitly constrain individual button widths and prevent menu dish names from collapsing to vertical glyphs.
 - Preserve screenshot artifacts (desktop/tablet/mobile) from CI for human review before merging a UI change.
+
+## Cloudflare Workers Builds ownership
+- Cloudflare Workers is deployed by Cloudflare Workers Builds through a connected GitHub repository, not by GitHub Actions.
+- Keep `wrangler.jsonc` as the source of truth for Worker name, static assets directory and SPA fallback.
+- The Worker name is `today-eat-what`; it must match the Cloudflare dashboard Worker name.
+- Build H5 for Workers at `/` using `bun run build:workers`; only GitHub Pages uses `/today-eat-what/`.
+- Deploy Worker static assets with `bun run deploy:workers`; previews use `bun run preview:workers` (opt-in).
+- Do not reintroduce a second GitHub Actions deploy of the same Cloudflare Worker.
