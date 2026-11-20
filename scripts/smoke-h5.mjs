@@ -54,6 +54,10 @@ async function assertLayout(page, width, engine) {
       kicker: box('.list-heading .section-kicker'),
       dishLineHeight: parseFloat(getComputedStyle(dish).lineHeight) || 20,
       buttonWhiteSpace: getComputedStyle(button).whiteSpace,
+      addButtonColor: getComputedStyle(document.querySelector('.add-button')).color,
+      addButtonTextColor: getComputedStyle(document.querySelector('.add-button').querySelector('span') || document.querySelector('.add-button')).color,
+      addButtonOpacity: parseFloat(getComputedStyle(document.querySelector('.add-button')).opacity),
+
     }
   })
   assert.ok(layout.scrollWidth <= width + 3, `${engine} ${width}px horizontal overflow: ${JSON.stringify(layout)}`)
@@ -62,6 +66,9 @@ async function assertLayout(page, width, engine) {
   assert.ok(layout.toggle.width >= 48 && layout.toggle.width <= 72, `${engine} ${width}px oversized toggle: ${JSON.stringify(layout)}`)
   assert.ok(layout.remove.width <= 48, `${engine} ${width}px oversized delete: ${JSON.stringify(layout)}`)
   assert.ok(layout.primary.width <= 320, `${engine} ${width}px oversized spin button: ${JSON.stringify(layout)}`)
+  assert.equal(layout.addButtonColor, 'rgb(41, 85, 62)', `${engine} ${width}px add button contrast: ${JSON.stringify(layout)}`)
+  assert.equal(layout.addButtonTextColor, 'rgb(41, 85, 62)', `${engine} ${width}px add button inner text contrast: ${JSON.stringify(layout)}`)
+  assert.ok(layout.addButtonOpacity >= .9, `${engine} ${width}px add button unexpectedly disabled/transparent: ${JSON.stringify(layout)}`)
   assert.ok(layout.kicker.height <= 24, `${engine} ${width}px wrapped list kicker: ${JSON.stringify(layout)}`)
   if (width > 780) {
     assert.ok(layout.sidebar.x >= layout.wheel.right + 10, `${engine} ${width}px columns overlap: ${JSON.stringify(layout)}`)
@@ -70,6 +77,10 @@ async function assertLayout(page, width, engine) {
   }
   if ([390, 768, 1680].includes(width)) {
     await page.screenshot({ path: `artifacts/layout/${engine}-${width}.png`, fullPage: true })
+    if (width === 390 || width === 768) {
+      await page.locator('.list-card').scrollIntoViewIfNeeded()
+      await page.screenshot({ path: `artifacts/layout/${engine}-${width}-menu.png`, fullPage: false })
+    }
   }
   console.log(`PASS layout ${engine} ${width}px: dish=${Math.round(layout.details.width)}px toggle=${Math.round(layout.toggle.width)}px`)
 }
