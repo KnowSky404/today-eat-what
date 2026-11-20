@@ -226,14 +226,14 @@ export default function Index() {
               <Text className='result-label'>{spinning ? '正在为你挑选' : result ? '今天就吃这个' : '准备好了吗？'}</Text>
               <Text className='result-title'>{spinning ? '惊喜正在路上…' : result ? result.dish : hasResults ? '让转盘替你做决定' : '还没有参与抽取的菜品'}</Text>
               <Text className='result-subtitle'>{result && !spinning ? result.shop : hasResults ? '按下按钮，随机选出一份午餐' : '在右侧添加或启用菜品后再试试'}</Text>
-              <Button className={'primary-button' + (!hasResults || spinning ? ' is-disabled' : '')} onClick={spin} disabled={!hasResults || spinning}>
+              <Button className={'primary-button' + (!hasResults || spinning ? ' is-disabled' : '')} onClick={spin} disabled={!hasResults || spinning ? true : undefined}>
                 <Text className='button-sparkle'>✦</Text>
                 <Text>{spinning ? '正在旋转…' : result ? '再转一次' : '开始随机选择'}</Text>
                 <Text className='button-arrow'>↗</Text>
               </Button>
-              <Button className={'mode-toggle' + (spinning ? ' is-disabled' : '')} onClick={() => { if (!spinning) setFastSpin((v) => !v) }} disabled={spinning}>
+              <Button className={'mode-toggle' + (spinning ? ' is-disabled' : '')} onClick={() => { if (!spinning) setFastSpin((v) => !v) }} disabled={spinning ? true : undefined}>
                 <View className={'mode-check' + (fastSpin ? ' is-on' : '')}><Text>{fastSpin ? '✓' : ''}</Text></View>
-                <Text>跳过旋转动画</Text>
+                <Text className='mode-label'>跳过旋转动画</Text>
               </Button>
             </View>
           </View>
@@ -255,14 +255,14 @@ export default function Index() {
                   <View className='add-form'>
                     <Input className='meal-input' value={shop} maxlength={MAX_TEXT_LENGTH} placeholder='店铺名称，例如：楼下食堂' onInput={(event) => setShop(event.detail.value)} />
                     <Input className='meal-input' value={dish} maxlength={MAX_TEXT_LENGTH} placeholder='菜品名称，例如：鸡腿饭' onInput={(event) => setDish(event.detail.value)} onConfirm={addMeal} />
-                    <Button className={'add-button' + (spinning || (!editingId && meals.length >= MAX_ITEMS) ? ' is-disabled' : '')} onClick={addMeal} disabled={spinning || (!editingId && meals.length >= MAX_ITEMS)}><Text>＋</Text> {editingId ? '保存修改' : '添加到清单'}</Button>
+                    <Button className={'add-button' + (spinning || (!editingId && meals.length >= MAX_ITEMS) ? ' is-disabled' : '')} onClick={addMeal} disabled={spinning || (!editingId && meals.length >= MAX_ITEMS) ? true : undefined}><Text>＋</Text> {editingId ? '保存修改' : '添加到清单'}</Button>
                     {editingId && <Button className='cancel-button' onClick={cancelEdit}>取消编辑</Button>}
                     {!!message && <Text className='form-message'>{message}</Text>}
                   </View>
 
                   <View className='list-meta'>
                     <Text>全部菜品 · {meals.length}</Text>
-                    <Button className='reset-button' onClick={resetSamples} disabled={spinning}>恢复演示数据 ↺</Button>
+                    <Button className='reset-button' onClick={resetSamples} disabled={spinning ? true : undefined}><Text className='reset-label'>恢复演示数据 ↺</Text></Button>
                   </View>
                   <View className='meal-list'>
                     {meals.map((item, index) => (
@@ -275,11 +275,11 @@ export default function Index() {
                         <Button
                           className={'toggle-button' + (item.enabled ? ' is-active' : '')}
                           onClick={() => toggleMeal(item.id)}
-                          disabled={spinning}
+                          disabled={spinning ? true : undefined}
                         >
                           {item.enabled ? '参与' : '暂停'}
                         </Button>
-                        <Button className='remove-button' onClick={() => removeMeal(item.id)} disabled={spinning}>×</Button>
+                        <Button className='remove-button' onClick={() => removeMeal(item.id)} disabled={spinning ? true : undefined}><Text className='remove-glyph'>×</Text></Button>
                       </View>
                     ))}
                     {meals.length === 0 && <View className='empty-list'><Text>还没有菜品。添加第一道吧。</Text></View>}

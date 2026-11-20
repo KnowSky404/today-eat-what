@@ -59,6 +59,12 @@ async function assertLayout(page, width, engine) {
       addButtonOpacity: parseFloat(getComputedStyle(document.querySelector('.add-button')).opacity),
       addButtonClass: document.querySelector('.add-button').className,
       addButtonDisabledAttribute: document.querySelector('.add-button').getAttribute('disabled'),
+      mode: box('.mode-toggle'),
+      modeText: document.querySelector('.mode-toggle').textContent,
+      reset: box('.reset-button'),
+      resetText: document.querySelector('.reset-button').textContent,
+      removeText: document.querySelector('.remove-button').textContent,
+      removeOpacity: parseFloat(getComputedStyle(document.querySelector('.remove-button')).opacity),
 
     }
   })
@@ -71,6 +77,11 @@ async function assertLayout(page, width, engine) {
   assert.equal(layout.addButtonColor, 'rgb(41, 85, 62)', `${engine} ${width}px add button contrast: ${JSON.stringify(layout)}`)
   assert.equal(layout.addButtonTextColor, 'rgb(41, 85, 62)', `${engine} ${width}px add button inner text contrast: ${JSON.stringify(layout)}`)
   assert.ok(layout.addButtonOpacity >= .9, `${engine} ${width}px add button unexpectedly disabled/transparent: ${JSON.stringify(layout)}`)
+  assert.ok(layout.mode.width >= 120, `${engine} ${width}px missing animation label: ${JSON.stringify(layout)}`)
+  assert.ok(layout.modeText.includes('跳过旋转动画'), `${engine} ${width}px missing animation label content`)
+  assert.ok(layout.reset.width >= 80 && layout.resetText.includes('恢复演示数据'), `${engine} ${width}px missing reset control: ${JSON.stringify(layout)}`)
+  assert.equal(layout.removeText.trim(), '×', `${engine} ${width}px missing delete label`)
+  assert.ok(layout.removeOpacity >= .9, `${engine} ${width}px hidden delete control: ${JSON.stringify(layout)}`)
   assert.ok(layout.kicker.height <= 24, `${engine} ${width}px wrapped list kicker: ${JSON.stringify(layout)}`)
   if (width > 780) {
     assert.ok(layout.sidebar.x >= layout.wheel.right + 10, `${engine} ${width}px columns overlap: ${JSON.stringify(layout)}`)
