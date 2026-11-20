@@ -33,5 +33,13 @@ jobs:
         run: bunx playwright install chromium firefox
       - name: Browser smoke test (Chromium & Firefox)
         run: bun run smoke:h5
+      - name: Upload responsive browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-browser-screenshots
+          path: artifacts/layout/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Build WeChat Mini Program
         run: bun run build:weapp

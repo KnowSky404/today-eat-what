@@ -224,3 +224,125 @@
 .mode-toggle[disabled] { opacity: .55; }
 .toggle-button { min-height: 38px; height: 38px; line-height: 38px; }
 .remove-button { width: 40px; height: 40px; line-height: 40px; font-size: 21px; }
+
+
+/*
+ * Taro H5 uses its own Button component styles. A button may behave like a
+ * full-width block inside a flex row; explicitly constrain the action columns.
+ * Grid tracks prevent the action from squeezing Chinese dish names vertically.
+ */
+.page-container, .dashboard > .wheel-card, .dashboard > .sidebar, .sidebar, .list-card, .list-body {
+  min-width: 0;
+}
+.page-container { width: 100%; }
+.list-card, .meal-list { width: 100%; min-width: 0; }
+.list-heading { align-items: flex-start; }
+.list-heading > .heading-copy { min-width: 0; flex: 1 1 auto; }
+.text-button, .reset-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin: 0;
+  padding: 5px 7px;
+  height: auto;
+  line-height: 1.5;
+}
+.add-form > .meal-input { min-width: 0; }
+.add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #496a54;
+  font-weight: 750;
+  line-height: 1.4;
+}
+.list-meta { min-width: 0; }
+.list-meta > text { white-space: nowrap; }
+.meal-list { overflow-x: hidden; }
+.meal-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 60px 40px;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+}
+.meal-index { width: 24px; min-width: 0; }
+.meal-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  flex: initial;
+}
+.meal-dish, .meal-shop {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+}
+.toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  min-height: 38px;
+  height: 38px;
+  flex: none;
+  margin: 0;
+  padding: 0 4px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.remove-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  min-height: 40px;
+  height: 40px;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+.primary-button {
+  display: flex;
+  width: min(100%, 300px);
+  max-width: 100%;
+  flex: 0 0 auto;
+  margin: 25px auto 0;
+  white-space: nowrap;
+}
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 11px 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex: none;
+}
+@media (max-width: 390px) {
+  .meal-row { grid-template-columns: 20px minmax(0, 1fr) 54px 36px; gap: 7px; }
+  .meal-index { width: 20px; }
+  .toggle-button { width: 54px; min-width: 54px; max-width: 54px; }
+  .remove-button { width: 36px; min-width: 36px; max-width: 36px; }
+  .list-meta { flex-wrap: wrap; gap: 6px; }
+}

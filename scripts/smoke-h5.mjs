@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile, stat, mkdir } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
 import { chromium, firefox } from 'playwright'
 
@@ -22,6 +22,59 @@ const server = createServer(async (req, res) => {
   }
 })
 
+
+// Layout regression checks: DOM presence alone allowed the first public release
+// to show a 500px-wide "参与" button and one-character-per-line dish names.
+async function assertLayout(page, width, engine) {
+  await page.setViewportSize({ width, height: 900 })
+  await page.locator('.meal-row').first().waitFor()
+  const layout = await page.evaluate(() => {
+    const box = (selector) => {
+      const element = document.querySelector(selector)
+      if (!element) throw new Error('Missing ' + selector)
+      const r = element.getBoundingClientRect()
+      return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom }
+    }
+    const dish = document.querySelector('.meal-row .meal-dish')
+    const button = document.querySelector('.meal-row .toggle-button')
+    const row = box('.meal-row')
+    return {
+      viewport: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      card: box('.list-card'),
+      wheel: box('.wheel-card'),
+      sidebar: box('.sidebar'),
+      row,
+      details: box('.meal-row .meal-details'),
+      dish: box('.meal-row .meal-dish'),
+      toggle: box('.meal-row .toggle-button'),
+      remove: box('.meal-row .remove-button'),
+      primary: box('.primary-button'),
+      listHeading: box('.list-heading'),
+      kicker: box('.list-heading .section-kicker'),
+      dishLineHeight: parseFloat(getComputedStyle(dish).lineHeight) || 20,
+      buttonWhiteSpace: getComputedStyle(button).whiteSpace,
+    }
+  })
+  assert.ok(layout.scrollWidth <= width + 3, `${engine} ${width}px horizontal overflow: ${JSON.stringify(layout)}`)
+  assert.ok(layout.details.width >= (width <= 390 ? 70 : 125), `${engine} ${width}px squashed dish: ${JSON.stringify(layout)}`)
+  assert.ok(layout.dish.height <= layout.dishLineHeight * 1.5, `${engine} ${width}px vertical dish: ${JSON.stringify(layout)}`)
+  assert.ok(layout.toggle.width >= 48 && layout.toggle.width <= 72, `${engine} ${width}px oversized toggle: ${JSON.stringify(layout)}`)
+  assert.ok(layout.remove.width <= 48, `${engine} ${width}px oversized delete: ${JSON.stringify(layout)}`)
+  assert.ok(layout.primary.width <= 320, `${engine} ${width}px oversized spin button: ${JSON.stringify(layout)}`)
+  assert.ok(layout.kicker.height <= 24, `${engine} ${width}px wrapped list kicker: ${JSON.stringify(layout)}`)
+  if (width > 780) {
+    assert.ok(layout.sidebar.x >= layout.wheel.right + 10, `${engine} ${width}px columns overlap: ${JSON.stringify(layout)}`)
+  } else {
+    assert.ok(layout.sidebar.y >= layout.wheel.bottom, `${engine} ${width}px mobile cards overlap: ${JSON.stringify(layout)}`)
+  }
+  if ([390, 768, 1680].includes(width)) {
+    await page.screenshot({ path: `artifacts/layout/${engine}-${width}.png`, fullPage: true })
+  }
+  console.log(`PASS layout ${engine} ${width}px: dish=${Math.round(layout.details.width)}px toggle=${Math.round(layout.toggle.width)}px`)
+}
+
+await mkdir('artifacts/layout', { recursive: true })
 await new Promise((done) => server.listen(0, '127.0.0.1', done))
 const address = server.address()
 const url = `http://127.0.0.1:${address.port}${base}`
@@ -49,8 +102,11 @@ try {
       await page.reload({ waitUntil: 'networkidle' })
       await page.locator('.hero-title').waitFor({ timeout: 10000 })
       assert.equal(await page.locator('.meal-row').count(), 12, 'mobile reload should still render')
+      for (const width of [320, 390, 768, 1024, 1440, 1680, 1920]) {
+        await assertLayout(page, width, engine.name())
+      }
       assert.equal(errors.length, 0, errors.join('\n'))
-      console.log(`PASS ${engine.name()} H5: desktop and mobile mounted, seeded, spin completed, no browser errors`)
+      console.log(`PASS ${engine.name()} H5: mounted, seeded, spun, 7 viewports checked, no browser errors`)
     } catch (error) {
       failures++
       console.error(`FAIL ${engine.name()}: ${error.stack || error}`)
