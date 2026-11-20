@@ -46,5 +46,23 @@ jobs:
           path: artifacts/layout/
           if-no-files-found: ignore
           retention-days: 7
+      - name: Build Workers H5 (root path)
+        run: |
+          bun run build:workers
+          test -f dist/index.html
+          grep -q '/js/' dist/index.html
+          if grep -q '/today-eat-what/js/' dist/index.html; then
+            echo 'Workers assets must use root paths, not GitHub Pages paths.' >&2
+            exit 1
+          fi
+      - name: Validate Worker deployment configuration (dry run)
+        run: bun run check:workers
+      - name: Save generated Bun lockfile for reproducible setup
+        uses: actions/upload-artifact@v4
+        with:
+          name: bun-generated-lockfile
+          path: bun.lock
+          if-no-files-found: error
+          retention-days: 3
       - name: Build WeChat Mini Program
         run: bun run build:weapp

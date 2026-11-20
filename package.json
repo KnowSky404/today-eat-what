@@ -16,7 +16,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "bun run typecheck && bun run test && bun run build:h5 && bun run build:weapp",
-    "smoke:h5": "node scripts/smoke-h5.mjs"
+    "smoke:h5": "node scripts/smoke-h5.mjs",
+    "deploy:workers": "wrangler deploy",
+    "preview:workers": "wrangler preview",
+    "check:workers": "wrangler deploy --dry-run"
   },
   "dependencies": {
     "@babel/runtime": "^7.25.0",
@@ -50,6 +53,7 @@
     "typescript": "~5.8.3",
     "vite": "^5.4.0",
     "vitest": "^3.2.4",
-    "playwright": "^1.55.0"
+    "playwright": "^1.55.0",
+    "wrangler": "^4.135.0"
   }
 }

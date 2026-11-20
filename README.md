@@ -30,14 +30,15 @@ bun run build:pages
 bunx playwright install chromium firefox # first time only
 bun run smoke:h5 # run after build:pages; verifies both browsers at desktop/mobile widths
 bun run build:workers
+bun run check:workers # Wrangler dry run; does not publish
 ```
 
 开发完成后请提交由 `bun install` 生成的 `bun.lock`，后续将 CI 切换至 `bun ci` 以锁定依赖。**当前初始化环境无法联网生成真实锁文件**，因此 CI 暂用 `bun install`。
 
 ## 部署方式
-- **GitHub Pages**：`.github/workflows/deploy-pages.yml` 在 main 更新时构建 `/today-eat-what/` 子路径版本。需在仓库 Settings → Pages → Build and deployment 选择 **GitHub Actions**。预期地址：https://knowsky404.github.io/today-eat-what/（需工作流成功才生效）。
-- **Cloudflare Workers**：`wrangler.jsonc` 的 Static Assets 将 `dist` 发布为静态应用，无需 Worker 后端脚本。设置 Actions secrets：`CLOUDFLARE_API_TOKEN`（具备 Workers Scripts 编辑权限）和 `CLOUDFLARE_ACCOUNT_ID`；main 更新会编译根路径构建并运行 `wrangler deploy`。没有凭据时跳过，不声称部署成功。若要绑定自定义域名，请在 Cloudflare 控制台另行配置。
-- 两条部署流程分别构建，**不要把 GitHub Pages 的子路径 dist 上传到 Workers**。
+- **GitHub Pages**：保持原有 GitHub Actions 发布流程，构建基准路径 `/today-eat-what/`。
+- **Cloudflare Workers**：使用 **Cloudflare Workers Builds（GitHub 连接）**。由 Cloudflare 监听 `main`、执行 `bun run build:workers` 构建根路径 H5，再执行 `bun run deploy:workers` 上传 `dist/` 静态资源；不再通过 GitHub Actions 上传 Worker。详细配置见 [Cloudflare Workers 部署指南](./docs/cloudflare-workers-builds.md)。
+- 两套发布互不干扰，构建产物不能混用。Worker 的名称须与 `wrangler.jsonc` 中的 `name`（`today-eat-what`）一致。
 
 ## 微信小程序
 `bun run build:weapp` 产生 `dist/`，用微信开发者工具打开项目。把 `project.config.json` 的 `touristappid` 换为自己的小程序 AppID 再做发布测试。此次只是跨端初始支持，不代表已通过微信真机或上架审核。
