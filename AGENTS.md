@@ -45,3 +45,10 @@ This file applies to the entire repository.
 - Build H5 for Workers at `/` using `bun run build:workers`; only GitHub Pages uses `/today-eat-what/`.
 - Deploy Worker static assets with `bun run deploy:workers`; previews use `bun run preview:workers` (opt-in).
 - Do not reintroduce a second GitHub Actions deploy of the same Cloudflare Worker.
+
+## Winner flow and curated seed data
+- A spin is complete only when the pointer has stopped and a visible winner dialog appears. The dialog must show the actual selected dish, shop, district and any saved personal note.
+- Mobile 375×667 and 390×844 viewports must reveal both roulette and primary spin button without scrolling.
+- Default seed entries are maintainer-supplied recommendations. Preserve uncertainty in notes and do not fabricate restaurant dishes, addresses, ratings or prices.
+- Migrate only the exact untouched original demo seed; never overwrite customized or intentionally empty menus. Keep the same local storage key/version where feasible.
+- Keep celebration animations CSS-only and honor reduced-motion preferences. Keep shared components compatible with WeChat Mini Program.
