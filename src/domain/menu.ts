@@ -3,6 +3,10 @@ export interface Meal {
   shop: string
   dish: string
   enabled: boolean
+  /** Store location / business district, e.g. 旺座 */
+  area?: string
+  /** Personal recommendation shown in the winner dialog */
+  note?: string
 }
 
 export interface MenuEnvelope {
@@ -12,12 +16,13 @@ export interface MenuEnvelope {
 
 export const MAX_ITEMS = 200
 export const MAX_TEXT_LENGTH = 40
+export const MAX_NOTE_LENGTH = 200
 
 export function activeMeals(items: readonly Meal[]): Meal[] {
   return items.filter((item) => item.enabled)
 }
 
-/** Uniformly choose one enabled shop+dish pair, not one shop first. */
+/** Each enabled shop + dish + location entry has an equal chance. */
 export function chooseMeal(items: readonly Meal[], random: () => number = Math.random): Meal | null {
   const eligible = activeMeals(items)
   if (eligible.length === 0) return null
@@ -26,12 +31,16 @@ export function chooseMeal(items: readonly Meal[], random: () => number = Math.r
   return eligible[Math.floor(safe * eligible.length)]
 }
 
-export function isDuplicate(items: readonly Meal[], shop: string, dish: string, excludeId?: string): boolean {
-  return items.some((item) => item.id !== excludeId && item.shop.toLocaleLowerCase() === shop.trim().toLocaleLowerCase()
-    && item.dish.toLocaleLowerCase() === dish.trim().toLocaleLowerCase())
+/** ExcludeId precedes area to preserve the existing editing API. */
+export function isDuplicate(items: readonly Meal[], shop: string, dish: string, excludeId?: string, area = ''): boolean {
+  const normalize = (text: string) => text.trim().toLocaleLowerCase()
+  return items.some((item) => item.id !== excludeId &&
+    normalize(item.shop) === normalize(shop) &&
+    normalize(item.dish) === normalize(dish) &&
+    normalize(item.area ?? '') === normalize(area))
 }
 
-/** Returns null when data is not a supported envelope. An intentional [] is valid. */
+/** Returns null only for unsupported/corrupt payload; [] is valid user intent. */
 export function parseMenu(value: unknown): Meal[] | null {
   if (!value || typeof value !== 'object') return null
   const envelope = value as Partial<MenuEnvelope>
@@ -47,8 +56,19 @@ export function parseMenu(value: unknown): Meal[] | null {
     const dish = maybe.dish.trim()
     if (!shop || !dish || shop.length > MAX_TEXT_LENGTH || dish.length > MAX_TEXT_LENGTH) continue
     if (typeof maybe.enabled !== 'boolean') continue
+    if (maybe.area !== undefined && (typeof maybe.area !== 'string' || maybe.area.length > MAX_TEXT_LENGTH)) continue
+    if (maybe.note !== undefined && (typeof maybe.note !== 'string' || maybe.note.length > MAX_NOTE_LENGTH)) continue
     seen.add(maybe.id)
-    valid.push({ id: maybe.id, shop, dish, enabled: maybe.enabled })
+    const area = maybe.area?.trim()
+    const note = maybe.note?.trim()
+    valid.push({
+      id: maybe.id,
+      shop,
+      dish,
+      enabled: maybe.enabled,
+      ...(area ? { area } : {}),
+      ...(note ? { note } : {}),
+    })
   }
   return valid
 }
