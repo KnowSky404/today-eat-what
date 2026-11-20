@@ -346,3 +346,20 @@
   .remove-button { width: 36px; min-width: 36px; max-width: 36px; }
   .list-meta { flex-wrap: wrap; gap: 6px; }
 }
+
+
+/* Readable secondary controls on white cards (including Taro Button text spans). */
+.add-button {
+  color: #29553e !important;
+  background-color: #e4f0e7 !important;
+  border: 1px solid #d9e8dc;
+  opacity: 1;
+}
+.add-button text, .add-button span { color: inherit !important; }
+.add-button[disabled] { opacity: .48; }
+.text-button { color: #69766b; }
+.reset-button { color: #846f63; }
+.list-description { color: #818a82; }
+.meal-shop { color: #7d877f; }
+.remove-button { color: #6e7a71; }
+.section-kicker { color: #909a90; }
