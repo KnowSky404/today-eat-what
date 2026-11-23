@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { createPrivateKey } from 'node:crypto'
-import { mkdir, readFile, realpath, rm } from 'node:fs/promises'
+import { mkdir, readFile, realpath, rm, stat } from 'node:fs/promises'
 import { isAbsolute, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -27,9 +27,9 @@ try {
   } catch {
     throw new Error('无法读取 WEAPP_PRIVATE_KEY_PATH 指向的文件。')
   }
-  const keyRelativeToBuild = relative(await realpath(projectPath).catch(() => projectPath), privateKeyPath)
-  if (!isAbsolute(keyRelativeToBuild) && keyRelativeToBuild !== '..' && !keyRelativeToBuild.startsWith('..' + sep)) {
-    throw new Error('请将上传私钥移出 dist-weapp/。构建会清理该目录，目录中的文件也可能被打包。')
+  const keyRelativeToRoot = relative(await realpath(root), privateKeyPath)
+  if (!isAbsolute(keyRelativeToRoot) && keyRelativeToRoot !== '..' && !keyRelativeToRoot.startsWith('..' + sep)) {
+    throw new Error('请将上传私钥保存在仓库外，并更新 WEAPP_PRIVATE_KEY_PATH。')
   }
   try {
     createPrivateKey(await readFile(privateKeyPath))
@@ -43,11 +43,28 @@ try {
     }
     throw error
   })
-  const build = spawnSync('bun', ['run', 'build:weapp'], { cwd: root, stdio: 'inherit' })
-  if (build.error || build.status !== 0) throw new Error('微信小程序生产构建失败。')
-
-  const config = JSON.parse(await readFile(join(projectPath, 'project.config.json'), 'utf8'))
-  if (config.appid !== appid || config.miniprogramRoot !== './') throw new Error('构建产物的小程序配置与本次发布配置不一致。')
+  const buildPath = await realpath(projectPath).catch((error) => {
+    if (error.code !== 'ENOENT') throw error
+    return projectPath
+  })
+  if (buildPath !== projectPath) throw new Error('请将 dist-weapp/ 设为仓库内的实际目录。')
+  const configPath = join(projectPath, 'project.config.json')
+  // Taro can exit with status 0 before generating a new project config.
+  await rm(configPath, { force: true })
+  const build = spawnSync('bun', ['run', 'build:weapp'], {
+    cwd: root,
+    stdio: 'inherit',
+    env: { ...process.env, NODE_ENV: 'production' },
+  })
+  if (build.error || build.status !== 0) {
+    throw new Error('微信小程序生产构建失败：' + (build.error?.message ?? build.signal ?? '退出码 ' + build.status))
+  }
+  const config = await readFile(configPath, 'utf8').then(JSON.parse).catch(() => {
+    throw new Error('生产构建未生成有效的 dist-weapp/project.config.json，请查看构建日志。')
+  })
+  if (config?.appid !== appid || config.miniprogramRoot !== './' || config.compileType !== 'miniprogram') {
+    throw new Error('构建产物的小程序配置与本次发布配置不一致，请检查 TARO_APP_ID、miniprogramRoot 和 compileType。')
+  }
   const project = new ci.Project({
     appid,
     type: 'miniProgram',
@@ -63,11 +80,12 @@ try {
     await mkdir(previewDir, { recursive: true })
     await rm(qrcodeOutputDest, { force: true })
     await ci.preview({ ...options, qrcodeFormat: 'image', qrcodeOutputDest })
+    if (!(await stat(qrcodeOutputDest).catch(() => null))?.size) throw new Error('微信 CI 未生成预览二维码文件。')
     finish('预览二维码已生成至 artifacts/weapp/preview.jpg')
   } else {
     await ci.upload({ ...options, version: version.trim() })
     finish(`开发版本 ${version.trim()} 已上传，请在微信公众平台的版本管理中检查。`)
   }
 } catch (error) {
-  finish(error.message ?? String(error), 1)
+  finish(error?.message ?? String(error), 1)
 }

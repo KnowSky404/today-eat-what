@@ -12,6 +12,9 @@ assert.equal(project.compileType, 'miniprogram')
 assert.equal(project.miniprogramRoot, './')
 assert.equal(project.appid, process.env.TARO_APP_ID || undefined)
 assert.deepEqual(JSON.parse(read('app.json')).pages, [route])
+assert.match(read('app.wxss'), /@import ['"](?:\.\/)?app-origin\.wxss['"]/)
+assert.match(read('app-origin.wxss'), /page\s*\{/)
+assert.equal(JSON.parse(read(route + '.json')).usingComponents.comp, '../../comp')
 assert.match(read(route + '.wxml'), /<template is="taro_tmpl"/)
 assert.match(read(route + '.wxss'), /\.weapp-shell/)
 
@@ -81,10 +84,15 @@ function closePage() {
 
 await openPage()
 assert.equal(elements('meal-row').length, 10)
-assert.deepEqual(config.onShareAppMessage.call(page, {}), {
+const share = config.onShareAppMessage.call(page, { from: 'menu' })
+assert.deepEqual(share, {
   title: '今天吃什么 · 用转盘决定',
   path: '/' + route,
+  imageUrl: '/assets/weapp-share.png',
 })
+const shareCover = readFileSync(new URL(share.imageUrl.slice(1), output))
+assert.equal(shareCover.subarray(1, 4).toString(), 'PNG')
+assert.deepEqual([shareCover.readUInt32BE(16), shareCover.readUInt32BE(20)], [600, 480])
 closePage()
 
 stored = JSON.stringify({
@@ -103,6 +111,7 @@ await waitFor(() => text('result-label') === '正在为你挑选', 'spin in prog
 assert.equal(elements('winner-dialog').length, 0)
 assert.match(elements('wheel-disc')[0].st, /transition-duration: 4200ms/)
 await waitFor(() => elements('winner-dialog').length, 'winner after spin', 6000)
+assert.equal(text('winner-dish'), '测试菜品')
 assert.equal(text('winner-note'), '修改后的备注')
 tap('winner-confirm')
 await waitFor(() => !elements('winner-dialog').length, 'dismiss dialog')
@@ -118,6 +127,9 @@ tap('winner-confirm')
 await waitFor(() => !elements('winner-dialog').length, 'dismiss dialog')
 tap('toggle-button')
 await waitFor(() => JSON.parse(stored).items[0].enabled === false, 'persist enabled state')
+assert.match(elements('primary-button')[0].cl, /is-disabled/)
+tap('toggle-button')
+await waitFor(() => JSON.parse(stored).items[0].enabled === true, 're-enable candidate')
 tap('remove-button')
 await waitFor(() => elements('empty-list').length, 'remove last dish')
 assert.deepEqual(JSON.parse(stored).items, [])
@@ -131,5 +143,17 @@ assert.deepEqual(JSON.parse(stored).items, [])
 confirmReset = true
 tap('reset-button')
 await waitFor(() => elements('meal-row').length === 10, 'confirm restore of recommendations')
+dispatch('meal-input', 'input', { value: ' 新店铺 ' }, 0)
+dispatch('meal-input', 'input', { value: '新菜品' }, 1)
+dispatch('meal-input', 'input', { value: '新区域' }, 2)
+tap('add-button')
+await waitFor(() => elements('meal-row').length === 11, 'add candidate')
+const { id, ...added } = JSON.parse(stored).items.at(-1)
+assert.ok(id)
+assert.deepEqual(added, { shop: '新店铺', dish: '新菜品', area: '新区域', note: '', enabled: true })
+closePage()
+
+await openPage()
+assert.equal(textOf(elements('meal-dish').at(-1)), '新菜品')
 closePage()
 console.log('PASS WeChat bundle: native page entry, share payload, draw, dialog and local storage (mock wx APIs)')
