@@ -13,6 +13,9 @@
     "ignore": [
       { "type": "suffix", "value": ".key" },
       { "type": "suffix", "value": ".pem" }
+    ],
+    "include": [
+      { "type": "file", "value": "assets/weapp-share.png" }
     ]
   }
 }

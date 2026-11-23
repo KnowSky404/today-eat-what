@@ -3,13 +3,19 @@ import { defineConfig } from '@tarojs/cli'
 const basePath = process.env.PUBLIC_BASE_PATH || '/'
 
 export default defineConfig(async (merge) => {
+  const isWeapp = process.env.TARO_ENV === 'weapp'
   const baseConfig = {
     projectName: 'today-eat-what',
     date: '2026-11-19',
     designWidth: 750,
     deviceRatio: { 640: 2.34 / 2, 750: 1, 375: 2, 828: 1.81 / 2 },
     sourceRoot: 'src',
-    outputRoot: process.env.TARO_ENV === 'weapp' ? 'dist-weapp' : 'dist',
+    outputRoot: isWeapp ? 'dist-weapp' : 'dist',
+    ...(isWeapp && {
+      copy: {
+        patterns: [{ from: 'src/assets/weapp-share.png', to: 'dist-weapp/assets/weapp-share.png' }],
+      },
+    }),
     framework: 'react',
     compiler: 'vite',
     plugins: [],

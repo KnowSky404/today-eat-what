@@ -36,6 +36,8 @@ export default function Index() {
   useShareAppMessage(() => ({
     title: '今天吃什么 · 用转盘决定',
     path: '/pages/index/index',
+    // A fixed cover keeps the native share card from capturing the local menu.
+    ...(IS_WEAPP && { imageUrl: '/assets/weapp-share.png' }),
   }))
 
   const enabled = useMemo(() => activeMeals(meals), [meals])

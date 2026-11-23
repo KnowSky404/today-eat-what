@@ -45,6 +45,8 @@ bun run check:workers # Wrangler dry run; does not publish
 
 ## 微信小程序
 
+首次上线请按[微信小程序发布清单](./docs/weapp-release-checklist.md)完成真机验收、备案、体验版配置和提审。
+
 ### 初始化与本地构建
 
 1. 在[微信公众平台](https://mp.weixin.qq.com/)注册并登录小程序，在「开发管理 → 开发设置」查看小程序 AppID。按需添加开发者和体验成员。
