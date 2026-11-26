@@ -1,6 +1,6 @@
 {
   "name": "today-eat-what",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "A local-first meal roulette for Web and WeChat Mini Programs",
   "license": "AGPL-3.0-only",
