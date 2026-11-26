@@ -503,12 +503,13 @@
   .wheel-card .section-title { font-size: 17px; }
   .section-kicker { font-size: 9px; margin-bottom: 5px; letter-spacing: 1.7px; }
   .small-chip { font-size: 10px; padding: 7px 10px; }
-  .wheel-wrap { width: min(100%, 248px); max-width: 248px; margin: 10px auto 7px; }
+  .wheel-wrap { width: min(100%, 352px); max-width: max(180px, calc(100svh - 328px)); margin: 10px auto 7px; }
   .wheel-rim { border-width: 7px; }
   .wheel-hub { width: 43px; height: 43px; margin: -21.5px 0 0 -21.5px; border-width: 4px; }
   .wheel-label { width: 64px; }
+  .app-shell:not(.weapp-shell) .wheel-label { max-width: 20%; text-wrap: balance; }
   .wheel-label text, .wheel-label taro-text-core { font-size: 9px; line-height: 1.26; }
-  .wheel-pointer { top: -3px; }
+  .wheel-pointer { top: calc(4.5% - 12px); }
   .pointer-triangle { border-left-width: 10px; border-right-width: 10px; border-top-width: 17px; }
   .result-label { margin-bottom: 3px; font-size: 10px; }
   .result-title { font-size: 19px; line-height: 1.28; }
@@ -527,7 +528,7 @@
   .hero { margin: 5px 0 8px; }
   .eyebrow { margin-bottom: 4px; }
   .wheel-card { padding-top: 12px; padding-bottom: 9px; }
-  .wheel-wrap { width: min(100%, 208px); max-width: 208px; margin-top: 7px; margin-bottom: 5px; }
+  .wheel-wrap { margin-top: 7px; margin-bottom: 5px; }
   .result-label { font-size: 9px; }
   .primary-button { height: 45px; margin-top: 9px; }
   .mode-toggle { min-height: 29px; padding: 3px 8px; }

@@ -146,6 +146,7 @@ try {
         const button = await page.locator('.primary-button').boundingBox()
         const wheel = await page.locator('.wheel-rim').boundingBox()
         assert.ok(button && wheel, 'mobile wheel and spin button must exist')
+        assert.ok(wheel.width >= width * .75, `${engine.name()} ${width}x${height} wheel is too narrow: diameter=${wheel.width}`)
         assert.ok(wheel.y >= 0 && wheel.y < height * .65, `${engine.name()} ${width}x${height} wheel is below first screen`)
         assert.ok(button.y >= 0 && button.y + button.height <= height - 8,
           `${engine.name()} ${width}x${height} spin CTA is below first screen: bottom=${button.y + button.height}`)
