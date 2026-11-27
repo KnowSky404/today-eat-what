@@ -23,11 +23,13 @@ This file applies to the entire repository.
 - Support empty states, local persistence failure, long dish names and a changing number of entries.
 - Keep example entries clearly labeled as editable demo data.
 
-## Quality gates
-- Run: bun run typecheck, bun run test, bun run build:h5 and bun run build:weapp.
-- Include tests for any domain behavior change. Keep secrets out of git.
-- Use focused commits and PRs; no direct automatic merge to main.
-- All public URLs are deployment *targets* until the corresponding workflow succeeds and platform settings are configured.
+## Engineering workflow
+- Adopted from [Manifest at 6f387de5065b6ffc475908880362939185ff89d7](https://github.com/KnowSky404/Manifest/blob/6f387de5065b6ffc475908880362939185ff89d7/docs/AI_NATIVE_DEVELOPMENT_WORKFLOW.md). Use the local [workflow and verification guide](docs/development-workflow.md).
+- Before editing, record objective, scope, acceptance, risk, authorization, base SHA and task branch in the PR or ignored `.task/`. Use a short-lived branch, focused commits and a PR. Do not merge automatically. At milestones record head, evidence, findings and next action. After a handoff or compaction reconcile that record with Git and checks.
+- Classify by highest impact: R0 ordinary docs; R1 isolated presentation; R2 features or shared state; R3 storage migration, privacy, credentials, dependencies with security impact, or changes to critical CI/release controls. Raise uncertain risk. Run local diff inspection and affected checks, and include tests for domain behavior. Keep secrets out of Git, logs, test fixtures and PRs.
+- Require CI's `Required checks` on the integration revision. Only the explicit ordinary-docs allowlist can skip app checks. Other diffs run unit/type, root/Pages H5, real Chromium and Firefox, and compiled WeChat checks. CI control changes must pass both the old applicable local gates and the new gate. Reuse evidence only for equivalent inputs and rerun affected checks when they change.
+- Review the change and affected context for correctness, security and regressions. R0 needs no full review cycle. R1/R2 require remote review, with two/three feedback cycles respectively. R3 requires independent review (or Owner-approved equivalent), remote code and security review, and candidate and rollback evidence, with three cycles before Owner arbitration. Batch feedback, record dispositions, and reverify the changed paths and final head/base. Block P0/P1 and material P2 findings that affect acceptance or safety. At the cycle limit, take unresolved blockers to the Owner.
+- Mark ready to merge only after valid checks, required reviews, candidate acceptance and rollback evidence. Report implementation, merge, release, deployment and production verification separately. Push, merge, previews, production release and destructive operations follow their existing authorization boundaries. Treat a public URL as a deployment target until the corresponding platform deployment is verified.
 
 ## Runtime regression
 - Pages subpath tests must use a real browser, not just a successful Vite build. Run `bun run build:pages` then `bun run smoke:h5` (Playwright Chromium and Firefox installed).
