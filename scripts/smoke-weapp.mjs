@@ -22,15 +22,45 @@ let app
 let config
 let stored = ''
 let confirmReset = false
+let fastSpin = false
+let updateReady
+let updateFailed
+let updatePrompt
+let appliedUpdates = 0
 const key = 'today-eat-what.menu.v1'
+const preferenceKey = 'today-eat-what.fast-spin'
 const viewport = () => ({ windowWidth: 390, windowHeight: 760, pixelRatio: 2 })
 globalThis.wx = {
   getWindowInfo: viewport,
   getSystemInfoSync: viewport,
-  getStorageSync: (name) => { assert.equal(name, key); return stored },
-  setStorageSync: (name, value) => { assert.equal(name, key); stored = value },
+  getStorageSync(name) {
+    if (name === preferenceKey) return fastSpin
+    assert.equal(name, key)
+    return stored
+  },
+  setStorageSync(name, value) {
+    if (name === preferenceKey) {
+      fastSpin = value
+    } else {
+      assert.equal(name, key)
+      stored = value
+    }
+  },
+  getAccountInfoSync: () => ({ miniProgram: { envVersion: 'release', version: '9.8.7' } }),
+  getUpdateManager: () => ({
+    onUpdateReady: (callback) => { assert.equal(updateReady, undefined); updateReady = callback },
+    onUpdateFailed: (callback) => { assert.equal(updateFailed, undefined); updateFailed = callback },
+    applyUpdate: () => { appliedUpdates++ },
+  }),
   pageScrollTo: ({ success }) => success?.({}),
-  showModal: ({ success }) => success?.({ confirm: confirmReset }),
+  showModal(options) {
+    if (options.title === '有新版本') {
+      assert.equal(updatePrompt, undefined)
+      updatePrompt = options
+    } else {
+      options.success?.({ confirm: confirmReset })
+    }
+  },
 }
 const page = {
   route,
@@ -82,8 +112,11 @@ function closePage() {
   page.data = { root: { cn: [] } }
 }
 
+await waitFor(() => typeof updateReady === 'function' && typeof updateFailed === 'function', 'app launch update listeners')
+assert.equal(updatePrompt, undefined)
 await openPage()
 assert.equal(elements('meal-row').length, 10)
+assert.equal(text('app-version'), '正式版 v9.8.7')
 const share = config.onShareAppMessage.call(page, { from: 'menu' })
 assert.deepEqual(share, {
   title: '今天吃什么 · 用转盘决定',
@@ -155,5 +188,21 @@ closePage()
 
 await openPage()
 assert.equal(textOf(elements('meal-dish').at(-1)), '新菜品')
+assert.equal(text('mode-check'), '✓', 'saved spin preference must survive reopening')
+const menuBeforeUpdate = stored
+const pendingUpdate = updateReady()
+assert.equal(appliedUpdates, 0, 'must wait for confirmation')
+assert.equal(updatePrompt.confirmText, '立即更新')
+assert.equal(updatePrompt.cancelText, '稍后更新')
+updatePrompt.success({ confirm: true })
+await pendingUpdate
+assert.equal(appliedUpdates, 1, 'apply confirmed update')
+assert.equal(stored, menuBeforeUpdate)
+assert.equal(fastSpin, true)
 closePage()
-console.log('PASS WeChat bundle: native page entry, share payload, draw, dialog and local storage (mock wx APIs)')
+
+await openPage()
+assert.equal(textOf(elements('meal-dish').at(-1)), '新菜品')
+assert.equal(text('mode-check'), '✓')
+closePage()
+console.log('PASS WeChat bundle: native launch, version footer, confirmed update, share, draw, and local data (mock wx APIs)')

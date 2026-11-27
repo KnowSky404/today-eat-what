@@ -175,6 +175,7 @@
 .note-description { color: #90a08e; font-size: 11px; line-height: 1.6; }
 .save-status { font-size: 10px; font-weight: 700; color: #829c79; }
 .page-footer { padding: 38px 0 0; display: flex; justify-content: space-between; font-size: 11px; color: #b3b8b3; gap: 15px; }
+.app-version { color: #68756c; font-variant-numeric: tabular-nums; }
 @media (max-width: 1100px) {
   .topbar { padding: 0 32px; }
   .page-container { padding: 10px 32px 32px; }
