@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
 import { readFile, stat, mkdir } from 'node:fs/promises'
 import { join, extname, resolve, sep } from 'node:path'
 import { chromium, firefox } from 'playwright'
 
 const root = resolve('dist')
-const base = '/today-eat-what/'
+const base = process.argv.includes('--root') ? '/' : '/today-eat-what/'
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+const shortCommit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim().slice(0, 8)
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' }
 const server = createServer(async (req, res) => {
   try {
@@ -44,6 +47,7 @@ async function assertLayout(page, width, engine) {
       card: box('.list-card'),
       wheel: box('.wheel-card'),
       sidebar: box('.sidebar'),
+      version: box('.app-version'),
       row,
       details: box('.meal-row .meal-details'),
       dish: box('.meal-row .meal-dish'),
@@ -69,6 +73,8 @@ async function assertLayout(page, width, engine) {
     }
   })
   assert.ok(layout.scrollWidth <= width + 3, `${engine} ${width}px horizontal overflow: ${JSON.stringify(layout)}`)
+  assert.ok(layout.version.y >= Math.max(layout.wheel.bottom, layout.sidebar.bottom), `${engine} ${width}px version label overlaps content`)
+  assert.ok(layout.version.width > 0 && layout.version.right <= width, `${engine} ${width}px version is clipped`)
   assert.ok(layout.details.width >= (width <= 390 ? 70 : 125), `${engine} ${width}px squashed dish: ${JSON.stringify(layout)}`)
   assert.ok(layout.dish.height <= layout.dishLineHeight * 1.5, `${engine} ${width}px vertical dish: ${JSON.stringify(layout)}`)
   assert.ok(layout.toggle.width >= 48 && layout.toggle.width <= 72, `${engine} ${width}px oversized toggle: ${JSON.stringify(layout)}`)
@@ -119,6 +125,9 @@ try {
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
       await page.locator('.hero-title').waitFor({ timeout: 10000 })
       assert.match(await page.locator('body').innerText(), /今天中午/)
+      const versionLabel = page.locator('.page-footer .app-version')
+      await versionLabel.waitFor()
+      assert.equal(await versionLabel.innerText(), `v${version} · ${shortCommit}`)
       assert.equal(await page.locator('.meal-row').count(), 10, 'owner recommendations must render')
       await page.locator('.primary-button').click()
       await page.locator('.winner-dialog').waitFor({ timeout: 7500 })

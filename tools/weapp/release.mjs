@@ -16,9 +16,15 @@ function finish(message, code = 0) {
 
 try {
   if (action !== 'preview' && action !== 'upload') throw new Error('用法：preview 或 upload')
-  const { TARO_APP_ID: appid, WEAPP_PRIVATE_KEY_PATH: keyPath, WEAPP_VERSION: version, WEAPP_DESC: desc } = process.env
+  const { TARO_APP_ID: appid, WEAPP_PRIVATE_KEY_PATH: keyPath, WEAPP_VERSION: legacyVersion, WEAPP_DESC: desc } = process.env
   if (!/^wx[0-9a-f]{16}$/.test(appid ?? '')) throw new Error('请在 TARO_APP_ID 中配置微信公众平台的小程序 AppID。')
-  if (action === 'upload' && !version?.trim()) throw new Error('请在 WEAPP_VERSION 中配置上传版本号。')
+  const { version } = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
+  if (action === 'upload') {
+    if (typeof version !== 'string' || !version.trim()) throw new Error('请在 package.json 中配置上传版本号。')
+    if (legacyVersion?.trim() && legacyVersion.trim() !== version) {
+      throw new Error(`WEAPP_VERSION 与 package.json 的版本 ${version} 不一致，请移除 WEAPP_VERSION 后重试。`)
+    }
+  }
   if (!keyPath) throw new Error('请在 WEAPP_PRIVATE_KEY_PATH 中配置小程序代码上传私钥的文件路径。')
 
   let privateKeyPath
@@ -83,8 +89,8 @@ try {
     if (!(await stat(qrcodeOutputDest).catch(() => null))?.size) throw new Error('微信 CI 未生成预览二维码文件。')
     finish('预览二维码已生成至 artifacts/weapp/preview.jpg')
   } else {
-    await ci.upload({ ...options, version: version.trim() })
-    finish(`开发版本 ${version.trim()} 已上传，请在微信公众平台的版本管理中检查。`)
+    await ci.upload({ ...options, version })
+    finish(`开发版本 ${version} 已上传，请在微信公众平台的版本管理中检查。`)
   }
 } catch (error) {
   finish(error?.message ?? String(error), 1)

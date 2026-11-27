@@ -4,6 +4,8 @@ import { Button, Input, Text, View } from '@tarojs/components'
 import { MAX_ITEMS, MAX_TEXT_LENGTH, MAX_NOTE_LENGTH, activeMeals, chooseMeal, isDuplicate, type Meal } from '../../domain/menu'
 import { SAMPLE_MEALS } from '../../domain/sample'
 import { readMenu, writeMenu } from '../../services/menu-storage'
+import { readFastSpin, writeFastSpin } from '../../services/spin-preference'
+import { getWeappVersionLabel } from '../../services/weapp-version'
 import './index.css'
 
 const SEGMENT_COLORS = ['#fbdcc5', '#fde9d5', '#e6ede1', '#dce8e8', '#e5e3f3', '#f4dce0']
@@ -27,11 +29,19 @@ export default function Index() {
   const [note, setNote] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editorOpen, setEditorOpen] = useState(true)
-  const [fastSpin, setFastSpin] = useState(false)
+  const [fastSpin, setFastSpin] = useState(() => IS_WEAPP && readFastSpin())
+  const [versionLabel] = useState(() => IS_WEAPP ? getWeappVersionLabel() : __WEB_BUILD_VERSION__)
   const [saved, setSaved] = useState(true)
   const [message, setMessage] = useState('')
   const spinning = pendingPick !== null
   const spinInProgress = useRef(false)
+
+  function toggleFastSpin() {
+    if (spinning) return
+    const next = !fastSpin
+    setFastSpin(next)
+    if (IS_WEAPP) writeFastSpin(next)
+  }
 
   useShareAppMessage(() => ({
     title: '今天吃什么 · 用转盘决定',
@@ -277,7 +287,7 @@ export default function Index() {
                 <Text>{spinning ? '正在旋转…' : result ? '再转一次' : '开始随机选择'}</Text>
                 <Text className='button-arrow'>↗</Text>
               </Button>
-              <Button className={'mode-toggle' + (spinning ? ' is-disabled' : '')} onClick={() => { if (!spinning) setFastSpin((v) => !v) }} disabled={spinning ? true : undefined}>
+              <Button className={'mode-toggle' + (spinning ? ' is-disabled' : '')} onClick={toggleFastSpin} disabled={spinning ? true : undefined}>
                 <View className={'mode-check' + (fastSpin ? ' is-on' : '')}><Text>{fastSpin ? '✓' : ''}</Text></View>
                 <Text className='mode-label'>跳过旋转动画</Text>
               </Button>
@@ -349,7 +359,7 @@ export default function Index() {
 
         <View className='page-footer'>
           <Text>做决定可以很简单。</Text>
-          <Text>Today Eat What · Built for the indecisive.</Text>
+          <Text className='app-version'>{versionLabel}</Text>
         </View>
       </View>
       {winnerOpen && result && (

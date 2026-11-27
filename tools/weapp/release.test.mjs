@@ -23,12 +23,15 @@ beforeEach(() => {
   mkdirSync(join(repo, 'dist-weapp'))
   copyFileSync(new URL('./release.mjs', import.meta.url), join(tools, 'release.mjs'))
   writeFileSync(keyPath, privateKeyPem, { mode: 0o600 })
-  writeFileSync(join(repo, '.env.local'), `TARO_APP_ID=${appid}\nWEAPP_PRIVATE_KEY_PATH=${JSON.stringify(keyPath)}\nWEAPP_VERSION=" 0.1.0 "\n`)
-  writeFileSync(join(repo, 'package.json'), JSON.stringify({ scripts: {
-    'build:weapp': 'node build.mjs',
-    'upload:weapp': scripts['upload:weapp'],
-    'preview:weapp': scripts['preview:weapp'],
-  } }))
+  writeFileSync(join(repo, '.env.local'), `TARO_APP_ID=${appid}\nWEAPP_PRIVATE_KEY_PATH=${JSON.stringify(keyPath)}\n`)
+  writeFileSync(join(repo, 'package.json'), JSON.stringify({
+    version: '0.1.0',
+    scripts: {
+      'build:weapp': 'node build.mjs',
+      'upload:weapp': scripts['upload:weapp'],
+      'preview:weapp': scripts['preview:weapp'],
+    },
+  }))
   writeFileSync(join(repo, 'build.mjs'), `
     import assert from 'node:assert/strict'
     import { writeFileSync } from 'node:fs'
@@ -82,6 +85,13 @@ test('uses local environment and an external key for preview and upload', () => 
   const upload = run('upload')
   expect(upload.status, upload.stderr).toBe(0)
   expect(upload.stdout).toContain('开发版本 0.1.0 已上传')
+})
+
+test('accepts a matching legacy version and rejects an override before building', () => {
+  expect(run('upload', { WEAPP_VERSION: ' 0.1.0 ' }).status).toBe(0)
+  const result = run('upload', { WEAPP_VERSION: '0.1.1', WEAPP_TEST_BUILD: 'skip' })
+  expect(result.status).toBe(1)
+  expect(result.stderr).toContain('WEAPP_VERSION 与 package.json 的版本 0.1.0 不一致')
 })
 
 test('rejects a link to a private key inside the repository', () => {
