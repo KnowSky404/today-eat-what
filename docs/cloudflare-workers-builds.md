@@ -35,3 +35,7 @@
 2. Workers URL 打开后转到 `#/pages/index/index` 是正常 Hash 路由，页面应显示转盘和示例菜品。
 3. 开发者工具 Network 中 `/js/` 和 `/css/` 应返回 200，没有错误的 `/today-eat-what/` 资产前缀。
 4. Firefox 和 Chromium 分别尝试抽选、菜品编辑、刷新；数据会按 **origin** 分别存储，GitHub Pages 和 Workers 域名不会共享菜单。
+
+## 跳过纯文档更新的生产构建
+
+由 Owner 在 Worker 的 **Settings → Builds → Build watch paths** 设置 **Include paths** 为 `*`，**Exclude paths** 为 `README.md`、`README.en.md`、`docs/architecture.md`。保持生产分支为 `main`，非生产预览按需开启。这样单纯修改这些说明时可跳过原生构建，混合实际构建输入的提交仍会触发。修改后用一次正常的纯文档变更和一次包含构建输入的常规变更核对 Builds 记录。[Cloudflare Build watch paths](https://developers.cloudflare.com/workers/ci-cd/builds/build-watch-paths/)
